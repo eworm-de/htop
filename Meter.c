@@ -338,17 +338,18 @@ static void GraphMeterMode_draw(Meter* this, int x, int y, int w) {
       }
    }
 
-   int i = nValues - (w * 2), k = 0;
-   if (i < 0) {
-      k = -i / 2;
-      i = 0;
+   int index = nValues - (w * 2);
+   int col = 0;
+   if (index < 0) {
+      col = -index / 2;
+      index = 0;
    }
-   for (; i < nValues - 1; i += 2, k++) {
+   for (; index < nValues - 1; index += 2, col++) {
       int pix = GraphMeterMode_pixPerRow * GRAPH_HEIGHT;
       if (this->total < 1)
          this->total = 1;
-      int v1 = CLAMP((int) lround(data->values[i] / this->total * pix), 1, pix);
-      int v2 = CLAMP((int) lround(data->values[i + 1] / this->total * pix), 1, pix);
+      int v1 = CLAMP((int) lround(data->values[index] / this->total * pix), 1, pix);
+      int v2 = CLAMP((int) lround(data->values[index + 1] / this->total * pix), 1, pix);
 
       int colorIdx = GRAPH_1;
       for (int line = 0; line < GRAPH_HEIGHT; line++) {
@@ -356,7 +357,7 @@ static void GraphMeterMode_draw(Meter* this, int x, int y, int w) {
          int line2 = CLAMP(v2 - (GraphMeterMode_pixPerRow * (GRAPH_HEIGHT - 1 - line)), 0, GraphMeterMode_pixPerRow);
 
          attrset(CRT_colors[colorIdx]);
-         mvaddstr(y + line, x + k, GraphMeterMode_dots[line1 * (GraphMeterMode_pixPerRow + 1) + line2]);
+         mvaddstr(y + line, x + col, GraphMeterMode_dots[line1 * (GraphMeterMode_pixPerRow + 1) + line2]);
          colorIdx = GRAPH_2;
       }
    }
