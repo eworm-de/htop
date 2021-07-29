@@ -30,7 +30,6 @@ static void TasksMeter_updateValues(Meter* this) {
    this->values[1] = pl->userlandThreads;
    this->values[2] = pl->totalTasks - pl->kernelThreads - pl->userlandThreads;
    this->values[3] = MINIMUM(pl->runningTasks, host->activeCPUs);
-   this->total     = pl->totalTasks;
 
    xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "%u/%u", MINIMUM(pl->runningTasks, host->activeCPUs), pl->totalTasks);
 }
@@ -69,7 +68,7 @@ const MeterClass TasksMeter_class = {
    .updateValues = TasksMeter_updateValues,
    .defaultMode = TEXT_METERMODE,
    .maxItems = 4,
-   .total = 100.0,
+   .total = -1.0,
    .attributes = TasksMeter_attributes,
    .name = "Tasks",
    .uiName = "Task counter",
