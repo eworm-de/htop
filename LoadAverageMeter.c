@@ -44,15 +44,16 @@ static void LoadAverageMeter_updateValues(Meter* this) {
    this->curItems = 1;
 
    // change bar color and total based on value
+   assert(this->total < 0.0);
+   if (this->total > -(double)this->host->activeCPUs) {
+      this->total = -(double)this->host->activeCPUs;
+   }
    if (this->values[0] < 1.0) {
       this->curAttributes = OK_attributes;
-      this->total = 1.0;
    } else if (this->values[0] < this->host->activeCPUs) {
       this->curAttributes = Medium_attributes;
-      this->total = this->host->activeCPUs;
    } else {
       this->curAttributes = High_attributes;
-      this->total = 2 * this->host->activeCPUs;
    }
 
    xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "%.2f/%.2f/%.2f", this->values[0], this->values[1], this->values[2]);
@@ -76,15 +77,16 @@ static void LoadMeter_updateValues(Meter* this) {
    Platform_getLoadAverage(&this->values[0], &five, &fifteen);
 
    // change bar color and total based on value
+   assert(this->total < 0.0);
+   if (this->total > -(double)this->host->activeCPUs) {
+      this->total = -(double)this->host->activeCPUs;
+   }
    if (this->values[0] < 1.0) {
       this->curAttributes = OK_attributes;
-      this->total = 1.0;
    } else if (this->values[0] < this->host->activeCPUs) {
       this->curAttributes = Medium_attributes;
-      this->total = this->host->activeCPUs;
    } else {
       this->curAttributes = High_attributes;
-      this->total = 2 * this->host->activeCPUs;
    }
 
    xSnprintf(this->txtBuffer, sizeof(this->txtBuffer), "%.2f", this->values[0]);
@@ -108,7 +110,7 @@ const MeterClass LoadAverageMeter_class = {
    .updateValues = LoadAverageMeter_updateValues,
    .defaultMode = TEXT_METERMODE,
    .maxItems = 3,
-   .total = 100.0,
+   .total = -1.0,
    .attributes = LoadAverageMeter_attributes,
    .name = "LoadAverage",
    .uiName = "Load average",
@@ -125,7 +127,7 @@ const MeterClass LoadMeter_class = {
    .updateValues = LoadMeter_updateValues,
    .defaultMode = TEXT_METERMODE,
    .maxItems = 1,
-   .total = 100.0,
+   .total = -1.0,
    .attributes = LoadMeter_attributes,
    .name = "Load",
    .uiName = "Load",
