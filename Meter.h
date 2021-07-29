@@ -66,6 +66,12 @@ typedef struct MeterClass_ {
    const Meter_GetCaption getCaption;
    const Meter_GetUiName getUiName;
    const int defaultMode;
+   // For "total" variable, sign matters.
+   // >0: Full/maximum value is stable (at least for a short duration). Draw as
+   //     percent graph. e.g. CPU & swap.
+   // <0: No stable maximum. Draw with dynamic scale. e.g. loadavg.
+   //     ((-total) indicates initial maximum value in bar meter mode.)
+   // Never set "total" to 0 (it's reserved for future use).
    const double total;
    const int* const attributes;
    const char* const name;                 /* internal name of the meter, must not contain any space */
@@ -91,15 +97,27 @@ typedef struct MeterClass_ {
 #define Meter_getCaptionFn(this_)      As_Meter(this_)->getCaption
 #define Meter_getCaption(this_)        (Meter_getCaptionFn(this_) ? As_Meter(this_)->getCaption((const Meter*)(this_)) : (this_)->caption)
 #define Meter_defaultMode(this_)       As_Meter(this_)->defaultMode
+#define Meter_maxItems(this_)          As_Meter(this_)->maxItems
 #define Meter_attributes(this_)        As_Meter(this_)->attributes
 #define Meter_name(this_)              As_Meter(this_)->name
 #define Meter_uiName(this_)            As_Meter(this_)->uiName
 #define Meter_isMultiColumn(this_)     As_Meter(this_)->isMultiColumn
 #define Meter_comprisedValues(this_)   As_Meter(this_)->comprisedValues
 
+typedef union {
+   int16_t scaleExp;
+   uint16_t numDots;
+   struct {
+      uint8_t itemIndex;
+      uint8_t details;
+   } cell;
+} GraphColorCell;
+
 typedef struct GraphData_ {
    struct timeval time;
-   double values[METER_GRAPHDATA_SIZE];
+   GraphColorCell* cells;
+   unsigned int numRecords;
+   uint16_t recordNumCells;
 } GraphData;
 
 struct Meter_ {
