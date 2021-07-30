@@ -11,6 +11,7 @@ in the source distribution for its full text.
 
 #include <limits.h> // IWYU pragma: keep
 #include <stdbool.h>
+#include <stdint.h> // IWYU pragma: keep
 #include <stdio.h>
 #include <stdlib.h> // IWYU pragma: keep
 #include <string.h> // IWYU pragma: keep
@@ -18,6 +19,11 @@ in the source distribution for its full text.
 #include "Compat.h"
 #include "Macros.h"
 
+#if defined(HAVE_ARM_NEON_INTRINSICS) && defined(__ARM_NEON)
+// ARM C Language Extensions (ACLE) recommends us to check __ARM_NEON before
+// including <arm_neon.h>
+#include <arm_neon.h>
+#endif
 
 void fail(void) ATTR_NORETURN;
 
@@ -103,4 +109,30 @@ static inline unsigned int powerOf2Floor(unsigned int x) {
 }
 #else
 unsigned int powerOf2Floor(unsigned int x);
+#endif
+
+static inline int popCount8(uint8_t x) {
+#if defined(HAVE_ARM_NEON_INTRINSICS) && defined(__ARM_NEON)
+   // With ARM Advanced SIMD extension (NEON), this generates smaller code than
+   // __builtin_popcount.
+   // Initialize the vector register. Set all lanes at once so that the
+   // compiler won't emit instruction to zero-initialize other lanes.
+   uint8x8_t v = vdup_n_u8(x);
+   // Count the number of set bits for each lane (8-bit) in the vector.
+   v = vcnt_u8(v);
+   // Get lane 0 and discard lanes 1 to 7.
+   return vget_lane_u8(v, 0);
+#elif defined(HAVE_BUILTIN_POPCOUNT) && defined(__POPCNT__)
+   // x86 POPCNT instruction. __builtin_popcount translates to it when it is
+   // enabled ("-mpopcnt").
+   return __builtin_popcount(x);
+#else
+   // This code is optimized for uint8_t input and smaller than the subroutine
+   // call that __builtin_popcount might generate (the latter is written with
+   // unsigned int input type and not specifically tuned for uint8_t input).
+   uint32_t n = (uint32_t)(x * 0x08040201UL);
+   return (uint32_t)(((n >> 3) & 0x11111111UL) * 0x11111111UL) >> 28;
+#endif
+}
+
 #endif
