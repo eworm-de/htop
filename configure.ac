@@ -240,6 +240,13 @@ AC_LINK_IFELSE([
    [AC_MSG_RESULT(no)
    AC_MSG_ERROR([can not find required macros: NAN, isgreater() and isgreaterequal()])])
 
+AC_MSG_CHECKING(for __builtin_clz)
+AC_COMPILE_IFELSE([
+   AC_LANG_PROGRAM([], [__builtin_clz(1); /* Requires gcc 3.4 or later */])],
+   [AC_DEFINE([HAVE_BUILTIN_CLZ], 1, [Define to 1 if the compiler supports '__builtin_clz' function.])
+   AC_MSG_RESULT(yes)],
+   AC_MSG_RESULT(no))
+
 # ----------------------------------------------------------------------
 
 

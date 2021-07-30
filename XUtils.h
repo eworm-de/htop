@@ -9,6 +9,7 @@ in the source distribution for its full text.
 
 #include "config.h" // IWYU pragma: keep
 
+#include <limits.h> // IWYU pragma: keep
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h> // IWYU pragma: keep
@@ -92,4 +93,14 @@ int compareRealNumbers(double a, double b);
    nonnegative. */
 double sumPositiveValues(const double* array, size_t count);
 
+/* Returns the nearest power of two that is not greater than x.
+   If x is 0, returns 0. */
+#ifdef HAVE_BUILTIN_CLZ
+static inline unsigned int powerOf2Floor(unsigned int x) {
+   if (x <= 0)
+      return 0;
+   return 1U << (sizeof(x) * CHAR_BIT - 1 - __builtin_clz(x));
+}
+#else
+unsigned int powerOf2Floor(unsigned int x);
 #endif
