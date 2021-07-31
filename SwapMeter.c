@@ -9,6 +9,7 @@ in the source distribution for its full text.
 
 #include "SwapMeter.h"
 
+#include <float.h>
 #include <math.h>
 #include <stddef.h>
 
@@ -40,6 +41,9 @@ static void SwapMeter_updateValues(Meter* this) {
    METER_BUFFER_APPEND_CHR(buffer, size, '/');
 
    Meter_humanUnit(buffer, this->total, size);
+   if (!(this->total > 0.0)) {
+      this->total = DBL_MIN;
+   }
 }
 
 static void SwapMeter_display(const Object* cast, RichString* out) {
